@@ -10,7 +10,8 @@ import (
 )
 
 type Result struct {
-	Status string
+	Status   string
+	Mensagem string
 }
 
 func main() {
@@ -21,17 +22,23 @@ func main() {
 func home(w http.ResponseWriter, r *http.Request) {
 	coupon := r.PostFormValue("coupon")
 	ccNumber := r.PostFormValue("ccNumber")
+	cep := r.PostFormValue("cep")
 
-	resultCoupon := makeHttpCall("http://localhost:9092", coupon)
+	resultCoupon := makeHttpCall("http://localhost:9092", coupon, cep)
 
 	result := Result{Status: "declined"}
 
 	if ccNumber == "1" {
-		result.Status = "approved"
+		result.Mensagem = "approved"
+		result.Status = "valid"
 	}
 
 	if resultCoupon.Status == "invalid" {
-		result.Status = "invalid coupon"
+		result = resultCoupon
+	}
+
+	if resultCoupon.Status == "valid" {
+		result.Mensagem = resultCoupon.Mensagem
 	}
 
 	jsonData, err := json.Marshal(result)
@@ -39,14 +46,16 @@ func home(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("Error processing json")
 	}
 
+	fmt.Println(string(jsonData))
+
 	fmt.Fprintf(w, string(jsonData))
 }
 
-
-func makeHttpCall(urlMicroservice string, coupon string) Result {
+func makeHttpCall(urlMicroservice string, coupon string, cep string) Result {
 
 	values := url.Values{}
 	values.Add("coupon", coupon)
+	values.Add("cep", cep)
 
 	res, err := http.PostForm(urlMicroservice, values)
 	if err != nil {

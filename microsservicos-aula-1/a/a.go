@@ -11,7 +11,8 @@ import (
 )
 
 type Result struct {
-	Status string
+	Status   string
+	Mensagem string
 }
 
 func main() {
@@ -27,24 +28,26 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 func process(w http.ResponseWriter, r *http.Request) {
 
-	result := makeHttpCall("http://localhost:9091", r.FormValue("coupon"), r.FormValue("cc-number"))
+	result := makeHttpCall("http://localhost:9091", r.FormValue("coupon"),
+		r.FormValue("cc-number"), r.FormValue("cep"))
 
 	t := template.Must(template.ParseFiles("templates/home.html"))
 	t.Execute(w, result)
 }
 
-func makeHttpCall(urlMicroservice string, coupon string, ccNumber string) Result {
+func makeHttpCall(urlMicroservice string, coupon string, ccNumber string, cep string) Result {
 
 	values := url.Values{}
 	values.Add("coupon", coupon)
 	values.Add("ccNumber", ccNumber)
+	values.Add("cep", cep)
 
 	retryClient := retryablehttp.NewClient()
 	retryClient.RetryMax = 5
 
 	res, err := retryClient.PostForm(urlMicroservice, values)
 	if err != nil {
-		result := Result{Status: "Servidor fora do ar!"}
+		result := Result{Mensagem: "Servidor fora do ar!"}
 		return result
 	}
 
