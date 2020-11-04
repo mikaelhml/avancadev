@@ -62,14 +62,14 @@ func process(msg amqp.Delivery) {
 
 	switch resultCoupon.Status {
 	case InvalidCoupon:
-		log.Println("Order: ", order.ID, ": invalid coupon!")
+		log.Println("Order: ", order.ID, ": Cumpom invalid!")
 
 	case ConnectionError:
 		msg.Reject(false)
-		log.Println("Order: ", order.ID, ": could not process!")
+		log.Println("Order: ", order.ID, ": Erro de conexão!")
 
 	case ValidCoupon:
-		log.Println("Order: ", order.ID, ": Processed")
+		log.Println("Order: ", order.ID, ": Operação Processada")
 	}
 }
 
